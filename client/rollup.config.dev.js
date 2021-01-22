@@ -67,5 +67,6 @@ export default {
             }
         })
 
-    ]
+    ],
+    external: ['socket.io-client']
 };
