@@ -1,12 +1,12 @@
 import 'phaser';
-import GameScene from './scenes/game-scene';
+import MenuScene from './scenes/menu-scene';
 
 const config = {
     type: Phaser.AUTO,
     backgroundColor: '#125555',
     width: 800,
     height: 600,
-    scene: GameScene
+    scene: MenuScene
 };
 
 const game = new Phaser.Game(config);
