@@ -1,0 +1,32 @@
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script>
+    const ADDR = 'ws://localhost:8000';
+    let socket;
+    function init() {
+        socket = io.connect(ADDR);
+        socket.on('test', handleTestEvent);
+        socket.on('testFromServer', handleTestFromServerEvent);
+
+        socket.emit('test', 'test message from client');
+    }
+
+    function write(msg) {
+        document.getElementById('output').innerHTML += `\n${msg}`;
+    }
+
+    function handleTestEvent(e) {
+        write(`test response from server ${e}`);
+        console.log(`test response from server ${e}`);
+    }
+
+    function handleTestFromServerEvent(e) {
+        write(`testFromServer message from server ${e}`);
+        console.log(`testFromServer message from server ${e}`);
+    }
+
+    window.addEventListener("load", init, false);
+</script>
+
+<h1>socket client test</h1>
+
+<p id="output">output</p>
