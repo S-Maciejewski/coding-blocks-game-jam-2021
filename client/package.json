@@ -9,7 +9,10 @@
         "watch": "rollup --watch --config rollup.config.dev.js"
     },
     "license": "MIT",
-    "dependencies": {},
+    "dependencies": {
+        "@types/socket.io-client": "^1.4.35",
+        "socket.io-client": "^3.1.0"
+    },
     "devDependencies": {
         "@rollup/plugin-replace": "^2.3.0",
         "phaser": "^3.22.0",

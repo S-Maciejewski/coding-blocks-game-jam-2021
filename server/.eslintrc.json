@@ -18,6 +18,7 @@
     "max-len": "off",
     "semi": "warn",
     "require-jsdoc": "off",
-    "no-unused-vars": "off"
+    "no-unused-vars": "off",
+    "padded-blocks": "off"
   }
 }

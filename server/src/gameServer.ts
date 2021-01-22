@@ -1,7 +1,8 @@
 import express from 'express';
 import io from 'socket.io';
-import EventType from './model/messageType';
+import EventType from './model/eventTypes';
 import { createServer, Server } from 'http';
+import GameState from './model/gameState';
 const cors = require('cors');
 
 export class GameServer {
@@ -9,6 +10,8 @@ export class GameServer {
     private server: Server;
     private ioServer!: SocketIO.Server;
     private port: number;
+
+    private games: GameState[];
 
     constructor(port: number) {
         this._app = express();
@@ -30,17 +33,28 @@ export class GameServer {
         });
 
         this.ioServer.on(EventType.CONNECT, (socket: io.Socket) => {
-            console.log(`Client ${socket.id} connected`);
 
-            socket.on(EventType.TEST_MESSAGE, (m: any) => {
-                console.log(`Got test message: ${m}`);
-                this.ioServer.emit(EventType.TEST_MESSAGE, m);
+            this.ioServer.on(EventType.CREATE_ROOM, () => {
+                this.handleCreateRoom(socket);
             });
 
-            socket.on(EventType.DISCONNECT, () => {
-                console.log(`Client ${socket.id} disconnected`);
+            this.ioServer.on(EventType.JOIN_ROOM, (code: string | undefined) => {
+                this.handleJoinRoom(socket, code);
             });
+
+            // socket.emit('startGame', this.gameState);
+            this.ioServer.emit('playerJoined' /* newly created player */);
         });
+    }
+
+    private handleCreateRoom(socket: io.Socket): void {
+        let newGameState = new GameState();
+        this.games.push(newGameState);
+        socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
+    }
+
+    private handleJoinRoom(socket: io.Socket, roomCode: string | undefined): void {
+        socket.emit(EventType.UPDATE_GAME_STATE, roomCode);
     }
 
     get app(): express.Application {

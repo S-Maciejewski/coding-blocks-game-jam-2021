@@ -1,2 +1,2 @@
 node_modules
-/dist/game.js*
+client/dist/game.js*
