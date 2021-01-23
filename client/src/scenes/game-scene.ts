@@ -5,6 +5,7 @@ export default class GameScene extends Phaser.Scene
     gameState: any;
     player: Player;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    speed: number = 0.01;
 
     constructor ()
     {
@@ -40,16 +41,26 @@ export default class GameScene extends Phaser.Scene
     {
         this.input.keyboard.on('keydown_W', this.accelerate, this);
         this.input.keyboard.on('keydown_S', this.brake, this);
+        this.input.keyboard.on('keydown_A', this.turnLeft, this);
+        this.input.keyboard.on('keydown_D', this.turnRight, this);
 
         this.player.x = this.player.car.x;
         this.player.y = this.player.car.y;
     }
 
     accelerate(event) {
-        this.player.car.applyForce(new Phaser.Math.Vector2(this.player.x, this.player.y));
+        this.player.car.applyForce(new Phaser.Math.Vector2(0,-0.01));
     }
 
     brake(event) {
-        this.player.car.applyForce(new Phaser.Math.Vector2(this.player.x, this.player.y));
+        this.player.car.applyForce(new Phaser.Math.Vector2(0,0.01));
+    }
+
+    turnLeft(event) {
+        this.player.car.rotation += 0.01;
+    }
+
+    turnRight(event) {
+        this.player.car.rotation -= 0.01;
     }
 }
