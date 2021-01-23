@@ -54,7 +54,10 @@ export class GameServer {
 
     private handleCreateRoom(socket: io.Socket): void {
         const newGameState = new GameState();
+
+        socket.join(newGameState.roomCode);
         newGameState.addPlayer(socket.id);
+
         console.log(`New room created by ${socket.id} code: ${newGameState.roomCode}`);
         this.games.push(newGameState);
         socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
@@ -71,7 +74,10 @@ export class GameServer {
 
             } else {
                 const newGameState = new GameState();
+
+                socket.join(newGameState.roomCode);
                 newGameState.addPlayer(socket.id);
+
                 this.games.push(newGameState);
                 socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
             }
@@ -83,8 +89,10 @@ export class GameServer {
                 socket.emit(EventType.NO_GAME_FOUND);
 
             } else {
+                socket.join(game.roomCode);
                 game.addPlayer(socket.id);
-                socket.emit(EventType.UPDATE_GAME_STATE, game);
+                this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE, game);
+                // socket.emit(EventType.UPDATE_GAME_STATE, game);
             }
         }
     }
@@ -92,7 +100,11 @@ export class GameServer {
     private handleDisconnect(socket: io.Socket) {
         console.log(`${socket.id} disconnected`);
         const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
-        game?.removePlayer(socket.id);
+        if (game) {
+            game.removePlayer(socket.id);
+            this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE, game);
+            socket.leaveAll();
+        }
         socket.emit(EventType.UPDATE_GAME_STATE, game);
     }
 
