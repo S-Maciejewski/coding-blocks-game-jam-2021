@@ -6,6 +6,7 @@ export default class Player {
     rotation: number;
     speed: number;
     car: Phaser.Physics.Matter.Image;
+    text: Phaser.GameObjects.Text;
     isReversing: boolean;
     currentSpeed: number;
 }
