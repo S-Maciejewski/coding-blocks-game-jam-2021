@@ -36,8 +36,10 @@ export class GameServer {
         });
 
         this.ioServer.on(EventType.CONNECT, (socket: io.Socket) => {
+            console.log(`New connection - ${socket.id}`);
 
             this.ioServer.on(EventType.CREATE_ROOM, () => {
+                console.log('received EventType.CREATE_ROOM');
                 this.handleCreateRoom(socket);
             });
 
@@ -87,6 +89,7 @@ export class GameServer {
     }
 
     private handleDisconnect(socket: io.Socket) {
+        console.log(`${socket.id} disconnected`);
         let game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
         game?.removePlayer(socket.id);
         socket.emit(EventType.UPDATE_GAME_STATE, game);
