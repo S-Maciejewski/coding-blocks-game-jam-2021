@@ -8,5 +8,4 @@ export default class Player {
     car: Phaser.Physics.Matter.Image;
     text: Phaser.GameObjects.Text;
     isReversing: boolean;
-    currentSpeed: number;
 }
