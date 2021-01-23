@@ -11,8 +11,13 @@ export default class GameScene extends Phaser.Scene
     reverseAcceleration: number = 0.01;
     deacceleration: number = 0.01;
 
-    turningAcceleration: number = 0.005;
+    turningAcceleration: number = 0.01;
     maxSpeed: number = 5;
+
+    carWidth: number = 75;
+    carHeight: number = 128;
+
+    rock: Phaser.Physics.Matter.Image;
 
     constructor ()
     {
@@ -26,7 +31,8 @@ export default class GameScene extends Phaser.Scene
 
     preload ()
     {
-        this.load.image('yellow_car', 'assets/yellow_car.png')
+        this.load.image('yellow_car', 'assets/yellow_car.png');
+        this.load.image('rock', 'assets/rock.png');
     }
 
     create ()
@@ -43,6 +49,7 @@ export default class GameScene extends Phaser.Scene
         this.player.car.setFrictionAir(0.5);
         this.player.car.setMass(1000);
         this.player.car.setFriction(0.2);
+        this.player.car.setBounce(1);
         this.player.currentSpeed = 0;
         this.player.text = this.add.text(200, 200, this.player._id);
 
@@ -53,6 +60,11 @@ export default class GameScene extends Phaser.Scene
 
         this.cameras.main.setBounds(0, 0, 1920, 1080);
         this.cameras.main.startFollow(this.player.car);
+
+        // level
+        this.rock = this.matter.add.image(500, 400, 'rock');
+        this.rock.setOnCollide(x => console.log('XD'));
+        this.rock.setStatic(true);
     }
 
     update() 
@@ -80,7 +92,6 @@ export default class GameScene extends Phaser.Scene
         this.player.text.x = this.player.x-100;
         this.player.text.y = this.player.y-100;
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
-
     }
 
     accelerate(velocityVector: Phaser.Math.Vector2) {
@@ -88,19 +99,19 @@ export default class GameScene extends Phaser.Scene
             this.player.currentSpeed += this.acceleration;
         } 
 
-        if(this.player.currentSpeed < 0.01 && this.player.isReversing) {
+        if(this.player.currentSpeed < 0.001 && this.player.isReversing) {
             this.player.isReversing = false;
         }
     }
     
     deaccelerate(velocityVector: Phaser.Math.Vector2) {
-        if(velocityVector.length() > 0.01) {
+        if(velocityVector.length() > 0.001) {
             this.player.currentSpeed -= this.deacceleration * (this.player.isReversing ? -1 : 1);
         }
     }
 
     brake(velocityVector: Phaser.Math.Vector2) {
-        if (this.player.currentSpeed > 0.01 && !this.player.isReversing) {
+        if (this.player.currentSpeed > 0.001 && !this.player.isReversing) {
             this.player.currentSpeed -= this.breakingPower;
         } else {
             this.player.currentSpeed -= this.reverseAcceleration;
