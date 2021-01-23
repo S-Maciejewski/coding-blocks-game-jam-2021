@@ -38,24 +38,23 @@ export class GameServer {
         this.ioServer.on(EventType.CONNECT, (socket: io.Socket) => {
             console.log(`New connection - ${socket.id}`);
 
-            this.ioServer.on(EventType.CREATE_ROOM, () => {
-                console.log('received EventType.CREATE_ROOM');
+            socket.on(EventType.CREATE_ROOM, () => {
                 this.handleCreateRoom(socket);
             });
 
-            this.ioServer.on(EventType.JOIN_ROOM, (code: string | undefined) => {
+            socket.on(EventType.JOIN_ROOM, (code: string | undefined) => {
                 this.handleJoinRoom(socket, code);
             });
 
-            this.ioServer.on(EventType.DISCONNECT, () => {
+            socket.on(EventType.DISCONNECT, () => {
                 this.handleDisconnect(socket);
             });
         });
     }
 
     private handleCreateRoom(socket: io.Socket): void {
-        console.log(`New room created by ${socket.id}`);
         let newGameState = new GameState();
+        console.log(`New room created by ${socket.id} code: ${newGameState.roomCode}`);
         this.games.push(newGameState);
         socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
     }

@@ -11,7 +11,9 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     preload() {
-
+        document.addEventListener('updateGameStateResponse', (data: CustomEvent) => {
+            this.handleNewGameStateResponse(data.detail);
+        })
     }
 
     create() {
@@ -33,5 +35,10 @@ export default class MenuScene extends Phaser.Scene {
         joinRoomButton.x -= joinRoomButton.width / 2;
         joinRoomButton.setInteractive();
         joinRoomButton.on('pointerdown', () => { this.socket.emit('joinRoom', roomCodeInputField.value); });
+    }
+
+    handleNewGameStateResponse(newState: any) {
+        console.log('Phaser: got new game state', newState);
+        this.gameState = newState;
     }
 }
