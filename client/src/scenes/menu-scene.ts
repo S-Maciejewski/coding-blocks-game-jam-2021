@@ -14,6 +14,7 @@ export default class MenuScene extends Phaser.Scene {
     noGameFound = false;
 
     playersListText: Phaser.GameObjects.Text;
+    roomCodeText: Phaser.GameObjects.Text;
     startGameButton: Phaser.GameObjects.Text;
 
     constructor() {
@@ -61,14 +62,19 @@ export default class MenuScene extends Phaser.Scene {
         this.joinRoomButton.x -= this.joinRoomButton.width / 2;
         this.joinRoomButton.setInteractive();
         this.joinRoomButton.on('pointerdown', () => {
-            this.handleJoinRoomButton(this.roomCodeInputField.value)
+            this.handleJoinRoomButton(this.roomCodeInputField.value.toUpperCase())
         });
     }
 
     handleNewGameStateResponse(newState: GameState) {
         console.log('Phaser: updating game state', this.gameState);
         this.gameState = newState;
+        if(this.gameState.players.length === 1) {
+            this.drawStartGameButton();
+        }
         console.log('Phaser: game state updated', this.gameState);
+        this.drawUserIds();
+        this.drawRoomCode(this.gameState.roomCode);
     }
 
     handleCreateRoomButton() {
@@ -108,9 +114,9 @@ export default class MenuScene extends Phaser.Scene {
                 console.log(`Joining room for code ${code}`);
                 this.gameJoinStatusText.destroy();
 
-                this.proceedToRoomView()
+                this.proceedToRoomView();
             }
-        }, 3000)
+        }, 0);
     }
 
     proceedToRoomView() {
@@ -118,18 +124,36 @@ export default class MenuScene extends Phaser.Scene {
         this.createRoomButton.destroy();
         this.joinRoomButton.destroy();
         this.roomCodeInputField.style.display = 'none';
+        this.drawUserIds();
+        this.drawRoomCode(this.gameState.roomCode);
+    }
 
+    drawStartGameButton() {
         const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
         const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-
+        
         this.startGameButton = this.add.text(screenCenterX, screenCenterY, 'Start game!');
         this.startGameButton.x -= this.startGameButton.width / 2;
         this.startGameButton.setInteractive();
         this.startGameButton.on('pointerdown', this.handleStartGameButton);
+    }
 
+    drawUserIds() {
+        const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+        const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+        
         this.playersListText = this.add.text(screenCenterX, screenCenterY - 0.2 * screenCenterY,
             this.gameState.players.map((p: Player) => p._id).join('\n'));
         this.playersListText.x -= this.playersListText.width / 2;
     }
 
+    drawRoomCode(roomCode: string) {
+        const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+        const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+        
+        this.roomCodeText = this.add.text(screenCenterX, screenCenterY - 0.4 * screenCenterY,
+           `Room code: ${roomCode}`);
+        this.roomCodeText.setFontSize(20);
+        this.roomCodeText.x -= this.roomCodeText.width / 2;
+    }
 }
