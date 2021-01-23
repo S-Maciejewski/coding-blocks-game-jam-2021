@@ -92,6 +92,13 @@ export default class GameScene extends Phaser.Scene
         this.player.text.x = this.player.x-100;
         this.player.text.y = this.player.y-100;
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
+
+        document.dispatchEvent(new CustomEvent('updatePlayer', {detail: {
+            x: this.player.x, 
+            y: this.player.y, 
+            speed: this.player.speed,
+            rotation: this.player.rotation
+        }}));
     }
 
     accelerate(velocityVector: Phaser.Math.Vector2) {

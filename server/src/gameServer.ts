@@ -53,6 +53,10 @@ export class GameServer {
             socket.on(EventType.START_GAME, () => {
                 this.handleStartGame(socket);
             });
+
+            socket.on(EventType.UPDATE_PLAYER, (player: Player) => {
+                this.handlePlayerUpdate(socket, player);
+            });
         });
     }
 
@@ -118,6 +122,17 @@ export class GameServer {
             this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE_START, game);
         } else {
             console.warn(`Could not find a game to start for player ${socket.id}`);
+        }
+    }
+
+    private handlePlayerUpdate(socket: io.Socket, player: Player) {
+        const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id === socket.id));
+        if (game) {
+            // TODO Update the player
+            // game.players.find((x: Player) => x._id === socket.id)
+            // TODO Propagate updated player response
+        } else {
+            console.warn(`Could not find a game to update the player ${socket.id}`);
         }
     }
 
