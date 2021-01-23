@@ -53,7 +53,8 @@ export class GameServer {
     }
 
     private handleCreateRoom(socket: io.Socket): void {
-        let newGameState = new GameState();
+        const newGameState = new GameState();
+        newGameState.addPlayer(socket.id);
         console.log(`New room created by ${socket.id} code: ${newGameState.roomCode}`);
         this.games.push(newGameState);
         socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
@@ -62,22 +63,22 @@ export class GameServer {
     private handleJoinRoom(socket: io.Socket, roomCode: string | undefined): void {
         console.log(`Player ${socket.id} trying to join room with code ${roomCode}`);
         if (roomCode === undefined) {
-            let gamesWaiting = this.games.filter((x: GameState) => x.roomState === RoomState.WAITING);
+            const gamesWaiting = this.games.filter((x: GameState) => x.roomState === RoomState.WAITING);
 
-            if (gamesWaiting.length === 0) {
+            if (gamesWaiting.length !== 0) {
                 gamesWaiting[0].addPlayer(socket.id);
                 socket.emit(EventType.UPDATE_GAME_STATE, gamesWaiting[0]);
 
             } else {
-                let newGameState = new GameState();
+                const newGameState = new GameState();
+                newGameState.addPlayer(socket.id);
                 this.games.push(newGameState);
                 socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
             }
 
         } else {
-            let game = this.games.find(x => x.roomCode === roomCode);
-            console.log('game')
-            console.log(game)
+            const game = this.games.find(x => x.roomCode === roomCode);
+            console.log(`Players joined game: ${JSON.stringify(game)}`);
             if (game === undefined) {
                 socket.emit(EventType.NO_GAME_FOUND);
 
@@ -90,7 +91,7 @@ export class GameServer {
 
     private handleDisconnect(socket: io.Socket) {
         console.log(`${socket.id} disconnected`);
-        let game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
+        const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
         game?.removePlayer(socket.id);
         socket.emit(EventType.UPDATE_GAME_STATE, game);
     }

@@ -8,14 +8,21 @@ export default class MenuScene extends Phaser.Scene {
 
     createRoomButton: Phaser.GameObjects.Text;
     joinRoomButton: Phaser.GameObjects.Text;
-    noGameFoundText: Phaser.GameObjects.Text;
     roomCodeInputField: HTMLInputElement;
+
+    noGameFoundText: Phaser.GameObjects.Text;
     noGameFound = false;
+
+    playersListText: Phaser.GameObjects.Text;
+    startGameButton: Phaser.GameObjects.Text;
 
     constructor() {
         super('MenuScene');
-        this.handleCreateRoomButton = this.handleCreateRoomButton.bind(this);
+        this.proceedToRoomView = this.proceedToRoomView.bind(this);
         this.handleJoinRoomButton = this.handleJoinRoomButton.bind(this);
+        this.handleStartGameButton = this.handleStartGameButton.bind(this);
+        this.handleCreateRoomButton = this.handleCreateRoomButton.bind(this);
+        this.handleNewGameStateResponse = this.handleNewGameStateResponse.bind(this);
     }
 
     preload() {
@@ -53,17 +60,14 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     handleNewGameStateResponse(newState: GameState) {
-        console.log('Phaser: got new game state', newState);
+        console.log('Phaser: updating game state', this.gameState);
         this.gameState = newState;
+        console.log('Phaser: game state updated', this.gameState);
     }
 
     handleCreateRoomButton() {
         document.dispatchEvent(new Event('createRoom', {}));
-        console.log('this', this)
-        this.createRoomButton.destroy();
-        this.joinRoomButton.destroy();
-        this.roomCodeInputField.style.display = 'none';
-        //TODO room view
+        this.proceedToRoomView()
     }
 
     handleStartGameButton() {
@@ -72,6 +76,7 @@ export default class MenuScene extends Phaser.Scene {
 
     handleJoinRoomButton(code: string) {
         console.log('Phaser: trying to join room with code:', code);
+        this.noGameFound = false;
         document.dispatchEvent(new CustomEvent('joinRoom', { detail: { code } }));
         setTimeout(() => {
             if (this.noGameFound) {
@@ -79,9 +84,31 @@ export default class MenuScene extends Phaser.Scene {
                 this.noGameFoundText.x -= this.createRoomButton.width / 2;
             } else {
                 console.log(`Joining room for code ${code}`);
-                this.noGameFoundText.destroy();
-                //TODO room view
+                if (this.noGameFoundText)
+                    this.noGameFoundText.destroy();
+
+                this.proceedToRoomView()
             }
         }, 3000)
     }
+
+    proceedToRoomView() {
+        console.log('Entering game lobby', this.gameState)
+        this.createRoomButton.destroy();
+        this.joinRoomButton.destroy();
+        this.roomCodeInputField.style.display = 'none';
+
+        const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+        const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+
+        this.startGameButton = this.add.text(screenCenterX, screenCenterY, 'Start game!');
+        this.startGameButton.x -= this.startGameButton.width / 2;
+        this.startGameButton.setInteractive();
+        this.startGameButton.on('pointerdown', this.handleStartGameButton);
+
+        this.playersListText = this.add.text(screenCenterX, screenCenterY - 0.2 * screenCenterY,
+            this.gameState.players.map((p: Player) => p._id).join('\n'));
+        this.playersListText.x -= this.playersListText.width / 2;
+    }
+
 }
