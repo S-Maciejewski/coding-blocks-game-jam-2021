@@ -1,9 +1,9 @@
 import express from 'express';
 import io from 'socket.io';
-import EventType from './model/eventTypes';
+import EventType from './models/eventTypes';
 import { createServer, Server } from 'http';
-import GameState, { RoomState } from './model/gameState';
-import Player from './model/player';
+import GameState, { RoomState } from './models/gameState';
+import Player from './models/player';
 const cors = require('cors');
 
 export class GameServer {
@@ -60,6 +60,7 @@ export class GameServer {
     }
 
     private handleJoinRoom(socket: io.Socket, roomCode: string | undefined): void {
+        console.log(`Player ${socket.id} trying to join room with code ${roomCode}`);
         if (roomCode === undefined) {
             let gamesWaiting = this.games.filter((x: GameState) => x.roomState === RoomState.WAITING);
 
@@ -75,16 +76,16 @@ export class GameServer {
 
         } else {
             let game = this.games.find(x => x.roomCode === roomCode);
-
+            console.log('game')
+            console.log(game)
             if (game === undefined) {
                 socket.emit(EventType.NO_GAME_FOUND);
 
             } else {
-                game?.addPlayer(socket.id);
+                game.addPlayer(socket.id);
                 socket.emit(EventType.UPDATE_GAME_STATE, game);
             }
         }
-        socket.emit(EventType.UPDATE_GAME_STATE, roomCode);
     }
 
     private handleDisconnect(socket: io.Socket) {
