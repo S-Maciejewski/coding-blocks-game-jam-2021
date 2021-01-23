@@ -1,4 +1,4 @@
-import Player from "../prefabs/player";
+import Player from "../models/player";
 
 export default class GameScene extends Phaser.Scene
 {
