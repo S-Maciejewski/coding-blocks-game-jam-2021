@@ -3,6 +3,7 @@ import io from 'socket.io';
 import EventType from './model/eventTypes';
 import { createServer, Server } from 'http';
 import GameState, { RoomState } from './model/gameState';
+import Player from './model/player';
 const cors = require('cors');
 
 export class GameServer {
@@ -21,6 +22,8 @@ export class GameServer {
         this.port = port;
         this.initSocket();
         this.listen();
+
+        this.games = [];
     }
 
     private initSocket(): void {
@@ -33,16 +36,17 @@ export class GameServer {
         });
 
         this.ioServer.on(EventType.CONNECT, (socket: io.Socket) => {
+            console.log(`New connection - ${socket.id}`);
 
-            this.ioServer.on(EventType.CREATE_ROOM, () => {
+            socket.on(EventType.CREATE_ROOM, () => {
                 this.handleCreateRoom(socket);
             });
 
-            this.ioServer.on(EventType.JOIN_ROOM, (code: string | undefined) => {
+            socket.on(EventType.JOIN_ROOM, (code: string | undefined) => {
                 this.handleJoinRoom(socket, code);
             });
 
-            this.ioServer.on(EventType.DISCONNECT, () => {
+            socket.on(EventType.DISCONNECT, () => {
                 this.handleDisconnect(socket);
             });
         });
@@ -50,28 +54,29 @@ export class GameServer {
 
     private handleCreateRoom(socket: io.Socket): void {
         let newGameState = new GameState();
+        console.log(`New room created by ${socket.id} code: ${newGameState.roomCode}`);
         this.games.push(newGameState);
         socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
     }
 
     private handleJoinRoom(socket: io.Socket, roomCode: string | undefined): void {
-        if(roomCode === undefined) {
-            let gamesWaiting = this.games.filter(x => x.roomState === RoomState.WAITING);
+        if (roomCode === undefined) {
+            let gamesWaiting = this.games.filter((x: GameState) => x.roomState === RoomState.WAITING);
 
-            if(gamesWaiting.length === 0) {
+            if (gamesWaiting.length === 0) {
                 gamesWaiting[0].addPlayer(socket.id);
                 socket.emit(EventType.UPDATE_GAME_STATE, gamesWaiting[0]);
-                
+
             } else {
                 let newGameState = new GameState();
                 this.games.push(newGameState);
                 socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
             }
-            
+
         } else {
             let game = this.games.find(x => x.roomCode === roomCode);
 
-            if(game === undefined) {
+            if (game === undefined) {
                 socket.emit(EventType.NO_GAME_FOUND);
 
             } else {
@@ -83,7 +88,8 @@ export class GameServer {
     }
 
     private handleDisconnect(socket: io.Socket) {
-        let game = this.games.find(x => x.players.find(y => y._id == socket.id));
+        console.log(`${socket.id} disconnected`);
+        let game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
         game?.removePlayer(socket.id);
         socket.emit(EventType.UPDATE_GAME_STATE, game);
     }
