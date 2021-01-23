@@ -52,6 +52,7 @@ export class GameServer {
     }
 
     private handleCreateRoom(socket: io.Socket): void {
+        console.log(`New room created by ${socket.id}`);
         let newGameState = new GameState();
         this.games.push(newGameState);
         socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
