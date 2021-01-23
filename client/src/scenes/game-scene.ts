@@ -5,6 +5,7 @@ export default class GameScene extends Phaser.Scene
 {
     gameState: GameState;
     player: Player;
+    otherPlayers: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
     acceleration: number = 0.02;
@@ -28,12 +29,17 @@ export default class GameScene extends Phaser.Scene
 
     init (data)
     {
-        console.log('init', data);
+        this.gameState = data;
     }
 
     preload ()
     {
-        this.load.image('yellow_car', 'assets/yellow_car.png');
+        this.load.image('car_0', 'assets/car_0.png');
+        this.load.image('car_1', 'assets/car_1.png');
+        this.load.image('car_2', 'assets/car_2.png');
+        this.load.image('car_3', 'assets/car_3.png');
+        this.load.image('car_4', 'assets/car_4.png');
+
         this.load.image('rock', 'assets/rock.png');
 
         this.load.image('tire', 'assets/tire.png');
@@ -53,15 +59,27 @@ export default class GameScene extends Phaser.Scene
         this.rock.setOnCollide(x => this.player.speed = 0);
         this.rock.setStatic(true);
 
-        for(var i = 0; i < this.gameState.players.length; i++){
-
+        for(var i = 1; i < this.gameState.players.length; i++) {
+            let gameStatePlayer = this.gameState.players[i];
+            let newPlayer = new Player();
+            newPlayer._id = gameStatePlayer._id
+            newPlayer.x = 200 * (i+1);
+            newPlayer.y = 200;
+            newPlayer.car = this.matter.add.image(newPlayer.x, newPlayer.y, `car_${i}`);
+            newPlayer.car.setAngle(90);
+            newPlayer.car.setFrictionAir(0.5);
+            newPlayer.car.setMass(1000);
+            newPlayer.car.setFriction(0.2);
+            newPlayer.car.setBounce(1);
+            newPlayer.speed = 0;
+            newPlayer.text = this.add.text(200 * (i+1), 200, newPlayer._id);
         }
 
         this.player = new Player();
         this.player._id = 'test-id';
         this.player.x = 200;
         this.player.y = 200;
-        this.player.car = this.matter.add.image(this.player.x, this.player.y, 'yellow_car');
+        this.player.car = this.matter.add.image(this.player.x, this.player.y, 'car_0');
         this.player.car.setAngle(90);
         this.player.car.setFrictionAir(0.5);
         this.player.car.setMass(1000);
