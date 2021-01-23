@@ -87,8 +87,7 @@ export class GameServer {
             }
 
         } else {
-            const game = this.games.find(x => x.roomCode === roomCode);
-            console.log(`Players joined game: ${JSON.stringify(game)}`);
+            const game = this.games.find((x: GameState) => x.roomCode === roomCode);
             if (game === undefined) {
                 socket.emit(EventType.NO_GAME_FOUND);
 
@@ -115,6 +114,7 @@ export class GameServer {
         const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
         if (game) {
             game.roomState = RoomState.IN_PROGRESS;
+            game.setPlayerPositions();
             this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE_START, game);
         } else {
             console.warn(`Could not find a game to start for player ${socket.id}`);
