@@ -4,7 +4,8 @@ import Player from '../models/player';
 
 export default class MenuScene extends Phaser.Scene {
     socket: SocketIOClient.Socket;
-    gameState: any;
+    gameState: GameState;
+    playerId: string;
 
     createRoomButton: Phaser.GameObjects.Text;
     joinRoomButton: Phaser.GameObjects.Text;
@@ -28,6 +29,11 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     preload() {
+        document.addEventListener('playerId', (data: CustomEvent) => {
+            this.playerId = data.detail;
+            console.log(`Player id: ${this.playerId}`);
+        })
+
         document.addEventListener('updateGameStateResponse', (data: CustomEvent) => {
             this.handleNewGameStateResponse(data.detail);
         });
@@ -40,7 +46,7 @@ export default class MenuScene extends Phaser.Scene {
         document.addEventListener('updateGameStateStartResponse', (data: CustomEvent) => {
             this.handleNewGameStateResponse(data.detail);
             this.startGame();
-        })
+        });
     }
 
     create() {
@@ -69,10 +75,10 @@ export default class MenuScene extends Phaser.Scene {
     handleNewGameStateResponse(newState: GameState) {
         console.log('Phaser: updating game state', this.gameState);
         this.gameState = newState;
-        if(this.gameState.players.length === 1) {
+        if (this.gameState.players.length === 1) {
             this.drawStartGameButton();
         }
-        else if(this.startGameButton === undefined) {
+        else if (this.startGameButton === undefined) {
             this.drawWaitingForHostText();
         }
         console.log('Phaser: game state updated', this.gameState);
@@ -97,7 +103,7 @@ export default class MenuScene extends Phaser.Scene {
             setTimeout(() => {
                 this.startGameButton.text = 'Game starting in 1!';
                 setTimeout(() => {
-                    this.scene.start('GameScene', this.gameState);
+                    this.scene.start('GameScene', { gameState: this.gameState, player: this.playerId });
                 }, 1000);
             }, 1000);
         }, 1000);
@@ -142,7 +148,7 @@ export default class MenuScene extends Phaser.Scene {
     drawStartGameButton() {
         const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
         const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-        
+
         this.startGameButton = this.add.text(screenCenterX, screenCenterY, 'Start game!');
         this.startGameButton.x -= this.startGameButton.width / 2;
         this.startGameButton.setInteractive();
@@ -152,7 +158,7 @@ export default class MenuScene extends Phaser.Scene {
     drawUserIds() {
         const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
         const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-        
+
         this.playersListText = this.add.text(screenCenterX, screenCenterY - 0.2 * screenCenterY,
             this.gameState.players.map((p: Player) => p._id).join('\n'));
         this.playersListText.x -= this.playersListText.width / 2;
@@ -161,9 +167,9 @@ export default class MenuScene extends Phaser.Scene {
     drawRoomCode(roomCode: string) {
         const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
         const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-        
+
         this.roomCodeText = this.add.text(screenCenterX, screenCenterY - 0.4 * screenCenterY,
-           `Room code: ${roomCode}`);
+            `Room code: ${roomCode}`);
         this.roomCodeText.setFontSize(20);
         this.roomCodeText.x -= this.roomCodeText.width / 2;
     }
