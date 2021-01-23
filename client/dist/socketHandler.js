@@ -7,6 +7,7 @@ console.log(`Connecting to socket ${socket.io.engine.hostname}`)
 console.log(socket.io.engine)
 
 // TODO: replace strings in event types with enum (JSON in this case, as both socket handler and phaser should use it)
+// Socket listeners
 socket.on('updateGameState', data => {
     handleUpdateGameStateResponse(data)
 })
@@ -17,6 +18,8 @@ socket.on('updateGameStateStart', data => {
     handleUpdateGameStateStartResponse(data)
 })
 
+
+// Handlers
 function handleCreateRoom() {
     console.log('Got createRoom from phaser, sending to server...')
     socket.emit('createRoom')
@@ -47,10 +50,19 @@ function handleStartGame() {
     socket.emit('startGame')
 }
 
+function handlePlayerUpdate(customEvent) {
+    socket.emit('updatePlayer', { _id: socket.id, ...customEvent.detail })
+}
+
+// Event listeners
 document.addEventListener('createRoom', handleCreateRoom)
 
-document.addEventListener('joinRoom', (e => {
-    handleJoinRoom(e)
+document.addEventListener('joinRoom', (customEvent => {
+    handleJoinRoom(customEvent)
 }))
 
 document.addEventListener('startGame', handleStartGame)
+
+document.addEventListener('updatePlayer', (customEvent => {
+    handlePlayerUpdate(customEvent)
+}))
