@@ -10,8 +10,8 @@ export default class GameScene extends Phaser.Scene
 
     acceleration: number = 0.02;
     breakingPower: number = 0.05;
-    reverseAcceleration: number = 0.01;
-    deacceleration: number = 0.01;
+    reverseAcceleration: number = 0.02;
+    deceleration: number = 0.03;
 
     turningAcceleration: number = 0.01;
     maxSpeed: number = 5;
@@ -76,7 +76,7 @@ export default class GameScene extends Phaser.Scene
         }
 
         this.player = new Player();
-        this.player._id = 'test-id';
+        this.player._id = 'You';
         this.player.x = 200;
         this.player.y = 200;
         this.player.car = this.matter.add.image(this.player.x, this.player.y, 'car_0');
@@ -123,6 +123,15 @@ export default class GameScene extends Phaser.Scene
         this.player.text.x = this.player.x-100;
         this.player.text.y = this.player.y-100;
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
+
+        this.otherPlayers.forEach(otherPlayer => {
+
+            otherPlayer.car.setPosition(otherPlayer.x, otherPlayer.y);
+
+            otherPlayer.text.x = otherPlayer.x-100;
+            otherPlayer.text.y = otherPlayer.y-100;
+            otherPlayer.text.text = `${otherPlayer._id}\n${otherPlayer.x.toFixed(0)}, ${otherPlayer.y.toFixed(0)}`;
+        })
     }
 
     accelerate(velocityVector: Phaser.Math.Vector2) {
@@ -137,7 +146,9 @@ export default class GameScene extends Phaser.Scene
     
     deaccelerate(velocityVector: Phaser.Math.Vector2) {
         if(velocityVector.length() > 0.1) {
-            this.player.speed -= this.deacceleration * (this.player.isReversing ? -1 : 1);
+            this.player.speed -= this.deceleration * (this.player.isReversing ? -1 : 1);
+        } else {
+            this.player.speed = 0;
         }
     }
 
