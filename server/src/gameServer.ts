@@ -2,7 +2,7 @@ import express from 'express';
 import io from 'socket.io';
 import EventType from './model/eventTypes';
 import { createServer, Server } from 'http';
-import GameState from './model/gameState';
+import GameState, { RoomState } from './model/gameState';
 const cors = require('cors');
 
 export class GameServer {
@@ -42,8 +42,9 @@ export class GameServer {
                 this.handleJoinRoom(socket, code);
             });
 
-            // socket.emit('startGame', this.gameState);
-            this.ioServer.emit('playerJoined' /* newly created player */);
+            this.ioServer.on(EventType.DISCONNECT, () => {
+                this.handleDisconnect(socket);
+            });
         });
     }
 
@@ -54,7 +55,37 @@ export class GameServer {
     }
 
     private handleJoinRoom(socket: io.Socket, roomCode: string | undefined): void {
+        if(roomCode === undefined) {
+            let gamesWaiting = this.games.filter(x => x.roomState === RoomState.WAITING);
+
+            if(gamesWaiting.length === 0) {
+                gamesWaiting[0].addPlayer(socket.id);
+                socket.emit(EventType.UPDATE_GAME_STATE, gamesWaiting[0]);
+                
+            } else {
+                let newGameState = new GameState();
+                this.games.push(newGameState);
+                socket.emit(EventType.UPDATE_GAME_STATE, newGameState);
+            }
+            
+        } else {
+            let game = this.games.find(x => x.roomCode === roomCode);
+
+            if(game === undefined) {
+                socket.emit(EventType.NO_GAME_FOUND);
+
+            } else {
+                game?.addPlayer(socket.id);
+                socket.emit(EventType.UPDATE_GAME_STATE, game);
+            }
+        }
         socket.emit(EventType.UPDATE_GAME_STATE, roomCode);
+    }
+
+    private handleDisconnect(socket: io.Socket) {
+        let game = this.games.find(x => x.players.find(y => y._id == socket.id));
+        game?.removePlayer(socket.id);
+        socket.emit(EventType.UPDATE_GAME_STATE, game);
     }
 
     get app(): express.Application {

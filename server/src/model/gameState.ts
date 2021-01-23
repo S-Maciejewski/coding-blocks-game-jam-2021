@@ -12,10 +12,22 @@ export default class GameState {
         this.roomState = RoomState.WAITING;
     }
 
+    startGame() {
+        this.roomState = RoomState.IN_PROGRESS;
+    }
 
+    addPlayer(_id: string) {
+        const newPlayer = new Player();
+        newPlayer._id = _id;
+        this.players.push(newPlayer);
+    }
+
+    removePlayer(_id: string) {
+        this.players = this.players.filter(x => x._id !== _id);
+    }
 }
 
-enum RoomState {
+export enum RoomState {
     WAITING,
     IN_PROGRESS,
     FINISHED

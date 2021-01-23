@@ -1,4 +1,5 @@
 import 'phaser';
+import GameScene from './scenes/game-scene';
 import MenuScene from './scenes/menu-scene';
 
 const config = {
@@ -6,7 +7,17 @@ const config = {
     backgroundColor: '#125555',
     width: 800,
     height: 600,
-    scene: MenuScene
+    scene: [MenuScene, GameScene],
+    physics: {
+        default: 'matter',
+        matter: {
+            debug: false,
+            gravity: {
+                x: 0,
+                y: 0
+            }
+        }
+    },
 };
 
 const game = new Phaser.Game(config);

@@ -5,4 +5,5 @@ export default class Player {
     y: number;
     rotation: number;
     speed: number;
+    car: Phaser.Physics.Matter.Image;
 }
