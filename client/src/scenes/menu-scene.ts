@@ -10,7 +10,7 @@ export default class MenuScene extends Phaser.Scene {
     joinRoomButton: Phaser.GameObjects.Text;
     roomCodeInputField: HTMLInputElement;
 
-    noGameFoundText: Phaser.GameObjects.Text;
+    gameJoinStatusText: Phaser.GameObjects.Text;
     noGameFound = false;
 
     playersListText: Phaser.GameObjects.Text;
@@ -18,6 +18,7 @@ export default class MenuScene extends Phaser.Scene {
 
     constructor() {
         super('MenuScene');
+        this.startGame = this.startGame.bind(this);
         this.proceedToRoomView = this.proceedToRoomView.bind(this);
         this.handleJoinRoomButton = this.handleJoinRoomButton.bind(this);
         this.handleStartGameButton = this.handleStartGameButton.bind(this);
@@ -34,6 +35,11 @@ export default class MenuScene extends Phaser.Scene {
             this.noGameFound = true;
             console.log('Phaser: No game found');
         });
+
+        document.addEventListener('updateGameStateStartResponse', (data: CustomEvent) => {
+            this.handleNewGameStateResponse(data.detail);
+            this.startGame();
+        })
     }
 
     create() {
@@ -71,21 +77,36 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     handleStartGameButton() {
-        this.scene.start('GameScene', this.gameState);
+        document.dispatchEvent(new CustomEvent('startGame'));
+    }
+
+    startGame() {
+        this.startGameButton.on('pointerdown', () => { });
+        this.startGameButton.text = 'Game starting in 3!';
+        setTimeout(() => {
+            this.startGameButton.text = 'Game starting in 2!';
+            setTimeout(() => {
+                this.startGameButton.text = 'Game starting in 1!';
+                setTimeout(() => {
+                    this.scene.start('GameScene', this.gameState);
+                }, 1000);
+            }, 1000);
+        }, 1000);
     }
 
     handleJoinRoomButton(code: string) {
         console.log('Phaser: trying to join room with code:', code);
         this.noGameFound = false;
         document.dispatchEvent(new CustomEvent('joinRoom', { detail: { code } }));
+        this.gameJoinStatusText = this.add.text(this.cameras.main.worldView.x + this.cameras.main.width / 2, 200, 'Joining the room...');
+        this.gameJoinStatusText.x -= this.createRoomButton.width / 2;
+
         setTimeout(() => {
             if (this.noGameFound) {
-                this.noGameFoundText = this.add.text(this.cameras.main.worldView.x + this.cameras.main.width / 2, 200, 'No game found');
-                this.noGameFoundText.x -= this.createRoomButton.width / 2;
+                this.gameJoinStatusText.text = 'No game found';
             } else {
                 console.log(`Joining room for code ${code}`);
-                if (this.noGameFoundText)
-                    this.noGameFoundText.destroy();
+                this.gameJoinStatusText.destroy();
 
                 this.proceedToRoomView()
             }

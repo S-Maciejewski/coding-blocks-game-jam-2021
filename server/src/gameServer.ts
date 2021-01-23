@@ -49,6 +49,10 @@ export class GameServer {
             socket.on(EventType.DISCONNECT, () => {
                 this.handleDisconnect(socket);
             });
+
+            socket.on(EventType.START_GAME, () => {
+                this.handleStartGame(socket);
+            });
         });
     }
 
@@ -92,12 +96,11 @@ export class GameServer {
                 socket.join(game.roomCode);
                 game.addPlayer(socket.id);
                 this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE, game);
-                // socket.emit(EventType.UPDATE_GAME_STATE, game);
             }
         }
     }
 
-    private handleDisconnect(socket: io.Socket) {
+    private handleDisconnect(socket: io.Socket): void {
         console.log(`${socket.id} disconnected`);
         const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
         if (game) {
@@ -106,6 +109,16 @@ export class GameServer {
             socket.leaveAll();
         }
         socket.emit(EventType.UPDATE_GAME_STATE, game);
+    }
+
+    private handleStartGame(socket: io.Socket): void {
+        const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id == socket.id));
+        if (game) {
+            game.roomState = RoomState.IN_PROGRESS;
+            this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE_START, game);
+        } else {
+            console.warn(`Could not find a game to start for player ${socket.id}`);
+        }
     }
 
     get app(): express.Application {
