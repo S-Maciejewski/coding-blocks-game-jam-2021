@@ -72,6 +72,9 @@ export default class MenuScene extends Phaser.Scene {
         if(this.gameState.players.length === 1) {
             this.drawStartGameButton();
         }
+        else if(this.startGameButton === undefined) {
+            this.drawWaitingForHostText();
+        }
         console.log('Phaser: game state updated', this.gameState);
         this.drawUserIds();
         this.drawRoomCode(this.gameState.roomCode);
@@ -126,6 +129,14 @@ export default class MenuScene extends Phaser.Scene {
         this.roomCodeInputField.style.display = 'none';
         this.drawUserIds();
         this.drawRoomCode(this.gameState.roomCode);
+    }
+
+    drawWaitingForHostText() {
+        const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+        const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+
+        this.startGameButton = this.add.text(screenCenterX, screenCenterY, 'Waiting for host to start the game!');
+        this.startGameButton.x -= this.startGameButton.width / 2;
     }
 
     drawStartGameButton() {
