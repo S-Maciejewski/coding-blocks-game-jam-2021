@@ -8,16 +8,16 @@ export default class GameScene extends Phaser.Scene {
     players: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
-    acceleration: number = 0.015;
+    acceleration: number = 0.0065;
     breakingPower: number = 0.008;
     reverseAcceleration: number = 0.001;
     deacceleration: number = 0.002;
 
     turningAcceleration: number = 0.002;
-    maxSpeed: number = 6;
+    maxSpeed: number = 3;
 
-    carWidth: number = 75;
-    carHeight: number = 128;
+    carWidth: number = 72;
+    carHeight: number = 122;
 
     rock: Phaser.Physics.Matter.Image;
     tires: Phaser.GameObjects.Image[] = [];
@@ -57,9 +57,17 @@ export default class GameScene extends Phaser.Scene {
         // this.tires.push(this.add.image(200, 200, 'tire'));
 
         // level
-        this.rock = this.matter.add.image(500, 400, 'rock');
-        this.rock.setOnCollide(x => this.player.speed = 0);
-        this.rock.setStatic(true);
+        for(var i = 0; i < 4; i++) {
+            this.rock = this.matter.add.image(500 + (300*i), 400, 'rock');
+            this.rock.setOnCollide(x => this.player.speed = 0);
+            this.rock.setStatic(true);
+        }
+
+        for(var i = 0; i < 4; i++) {
+            this.rock = this.matter.add.image(300 + (410*i), 750, 'rock');
+            this.rock.setOnCollide(x => this.player.speed = 0);
+            this.rock.setStatic(true);
+        }
 
         for (var i = 0; i < this.gameState.players.length; i++) {
             let gameStatePlayer = this.gameState.players[i];
@@ -147,13 +155,13 @@ export default class GameScene extends Phaser.Scene {
             this.player.speed += this.acceleration;
         }
 
-        if (this.player.speed < 0.1 && this.player.isReversing) {
+        if (this.player.speed < 0.14 && this.player.isReversing) {
             this.player.isReversing = false;
         }
     }
 
     deaccelerate(velocityVector: Phaser.Math.Vector2) {
-        if (velocityVector.length() > 0.1) {
+        if (velocityVector.length() > 0.14) {
             this.player.speed -= this.deacceleration * (this.player.isReversing ? -1 : 1);
         } else {
             this.player.speed = 0;
@@ -161,7 +169,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     brake(velocityVector: Phaser.Math.Vector2) {
-        if (this.player.speed > 0.1 && !this.player.isReversing) {
+        if (this.player.speed > 0.14 && !this.player.isReversing) {
             this.player.speed -= this.breakingPower;
         } else {
             this.player.speed -= this.reverseAcceleration;
