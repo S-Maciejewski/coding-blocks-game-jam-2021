@@ -133,13 +133,9 @@ export default class GameScene extends Phaser.Scene {
                 let otherPlayer = this.gameState.players[i];
 
                 let index = this.players.findIndex((x: Player) => x._id === otherPlayer._id);
-                this.players[index].x = otherPlayer.x;
-                this.players[index].y = otherPlayer.y;
-                // this.players[index].rotation = otherPlayer.rotation;
-                this.players[index].car.setRotation(otherPlayer.rotation);
-                this.players[index].speed = otherPlayer.speed;
-                this.players[index].text.destroy();
-                this.players[index].text = this.add.text(otherPlayer.x, otherPlayer.y, otherPlayer._id);
+                this.players[index].text.setPosition(otherPlayer.x, otherPlayer.y);
+                this.players[index].car.setPosition(otherPlayer.x, otherPlayer.y);
+                this.players[index].car.setAngle(otherPlayer.rotation);
             }
         }
     }

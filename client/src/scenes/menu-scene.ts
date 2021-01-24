@@ -105,6 +105,7 @@ export default class MenuScene extends Phaser.Scene {
                 setTimeout(() => {
                     // TODO: Remove event listener for update
                     this.scene.start('GameScene', { gameState: this.gameState, playerId: this.playerId });
+                    this.scene.sleep('MenuScene');
                 }, 1000);
             }, 1000);
         }, 1000);
