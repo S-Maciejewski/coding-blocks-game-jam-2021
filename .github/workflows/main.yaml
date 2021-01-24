@@ -1,4 +1,4 @@
-name: Data scraping and deployment
+name: Github pages deployment
 
 on:
   push:
@@ -7,13 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./client
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
+          working-directory: ./client
           node-version: "12.x"
 
       - run: cd ./client
@@ -21,6 +24,7 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v1
         with:
+          working-directory: ./client
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
@@ -32,6 +36,7 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
+          working-directory: ./client
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           FOLDER: dist
