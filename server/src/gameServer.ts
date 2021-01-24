@@ -24,6 +24,7 @@ export class GameServer {
         this.listen();
 
         this.games = [];
+        // setInterval(this.printMonitoringLog, 10000);
     }
 
     private initSocket(): void {
@@ -110,6 +111,10 @@ export class GameServer {
             game.removePlayer(socket.id);
             this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE, game);
             socket.leaveAll();
+            if (game.players.length === 0) {
+                console.log(`Closing the room ${game.roomCode}`);
+                this.games = this.games.filter((x: GameState) => x.roomCode !== game.roomCode);
+            }
         }
         socket.emit(EventType.UPDATE_GAME_STATE, game);
     }
@@ -129,10 +134,20 @@ export class GameServer {
         const game = this.games.find((x: GameState) => x.players.find((y: Player) => y._id === socket.id));
         if (game) {
             // TODO Update the player
-            // game.players.find((x: Player) => x._id === socket.id)
+            game.updatePlayer(player);
             // TODO Propagate updated player response
+            this.ioServer.in(game.roomCode).emit(EventType.UPDATE_GAME_STATE, game);
         } else {
             console.warn(`Could not find a game to update the player ${socket.id}`);
+        }
+    }
+
+    private printMonitoringLog() {
+        if (this.games && this.games.length !== 0) {
+            console.log(`Games: ${this.games.length}, Players: ${this.games.reduce((acc: number, val: GameState) =>
+                acc += val.players.length, 0)}`);
+        } else {
+            console.log(`No games running at the moment`);
         }
     }
 

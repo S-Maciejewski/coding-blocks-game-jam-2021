@@ -73,7 +73,7 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     handleNewGameStateResponse(newState: GameState) {
-        console.log('Phaser: updating game state', this.gameState);
+        // console.log('Phaser: updating game state', this.gameState);
         this.gameState = newState;
         if (this.gameState.players.length === 1) {
             this.drawStartGameButton();
@@ -81,7 +81,7 @@ export default class MenuScene extends Phaser.Scene {
         else if (this.startGameButton === undefined) {
             this.drawWaitingForHostText();
         }
-        console.log('Phaser: game state updated', this.gameState);
+        // console.log('Phaser: game state updated', this.gameState);
         this.drawUserIds();
         this.drawRoomCode(this.gameState.roomCode);
     }

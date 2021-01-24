@@ -23,7 +23,7 @@ export default class GameState {
     }
 
     removePlayer(_id: string) {
-        this.players = this.players.filter(x => x._id !== _id);
+        this.players = this.players.filter((x: Player) => x._id !== _id);
     }
 
     // car: 75 x 128
@@ -35,6 +35,11 @@ export default class GameState {
                 this.players[i] = { ...this.players[i], x: 200, y: 200 + (100 * 1), rotation: 90, speed: 0 };
             }
         }
+    }
+
+    updatePlayer(player: Player): void {
+        const index = this.players.findIndex((x: Player) => x._id == player._id);
+        this.players[index] = player;
     }
 }
 

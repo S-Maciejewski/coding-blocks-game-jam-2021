@@ -21,7 +21,7 @@ socket.on('updateGameStateStart', data => {
 
 // Response handlers
 function handleUpdateGameStateResponse(data) {
-    console.log('Got updated state from server:', data)
+    // console.log('Got updated state from server:', data)
     document.dispatchEvent(new CustomEvent('updateGameStateResponse', { detail: data }))
 }
 

@@ -1,10 +1,10 @@
 import GameState from "../models/gameState";
 import Player from "../models/player";
 
-export default class GameScene extends Phaser.Scene
-{
+export default class GameScene extends Phaser.Scene {
     gameState: GameState;
     player: Player;
+    playerId: number;
     otherPlayers: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
@@ -22,18 +22,16 @@ export default class GameScene extends Phaser.Scene
     rock: Phaser.Physics.Matter.Image;
     tires: Phaser.GameObjects.Image[] = [];
 
-    constructor ()
-    {
+    constructor() {
         super('GameScene');
     }
 
-    init (data)
-    {
-        this.gameState = data;
+    init(data) {
+        this.gameState = data.gameState;
+        this.playerId = data.playerId;
     }
 
-    preload ()
-    {
+    preload() {
         this.load.image('car_0', 'assets/car_0.png');
         this.load.image('car_1', 'assets/car_1.png');
         this.load.image('car_2', 'assets/car_2.png');
@@ -45,8 +43,7 @@ export default class GameScene extends Phaser.Scene
         this.load.image('tire', 'assets/tire.png');
     }
 
-    create ()
-    {
+    create() {
         var roomCodeInputField = (<HTMLInputElement>document.getElementById('roomCode'));
         roomCodeInputField.style.display = 'none';
 
@@ -59,11 +56,11 @@ export default class GameScene extends Phaser.Scene
         this.rock.setOnCollide(x => this.player.speed = 0);
         this.rock.setStatic(true);
 
-        for(var i = 1; i < this.gameState.players.length; i++) {
+        for (var i = 1; i < this.gameState.players.length; i++) {
             let gameStatePlayer = this.gameState.players[i];
             let newPlayer = new Player();
             newPlayer._id = gameStatePlayer._id
-            newPlayer.x = 200 * (i+1);
+            newPlayer.x = 200 * (i + 1);
             newPlayer.y = 200;
             newPlayer.car = this.matter.add.image(newPlayer.x, newPlayer.y, `car_${i}`);
             newPlayer.car.setAngle(90);
@@ -72,7 +69,7 @@ export default class GameScene extends Phaser.Scene
             newPlayer.car.setFriction(0.2);
             newPlayer.car.setBounce(1);
             newPlayer.speed = 0;
-            newPlayer.text = this.add.text(200 * (i+1), 200, newPlayer._id);
+            newPlayer.text = this.add.text(200 * (i + 1), 200, newPlayer._id);
         }
 
         this.player = new Player();
@@ -88,7 +85,7 @@ export default class GameScene extends Phaser.Scene
         this.player.speed = 0;
         this.player.text = this.add.text(200, 200, this.player._id);
 
-        this.matter.world.setBounds(0,0,1920,1080);
+        this.matter.world.setBounds(0, 0, 1920, 1080);
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.player.car.setOnCollide(x => this.player.speed = 0);
@@ -98,12 +95,11 @@ export default class GameScene extends Phaser.Scene
 
     }
 
-    update() 
-    {
+    update() {
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        if(this.cursors.up.isDown) {
+        if (this.cursors.up.isDown) {
             this.accelerate(velocityVector);
-        } else if(this.cursors.down.isDown) {
+        } else if (this.cursors.down.isDown) {
             this.brake(velocityVector);
         } else {
             this.deaccelerate(velocityVector);
@@ -111,39 +107,41 @@ export default class GameScene extends Phaser.Scene
 
         this.applyForce();
 
-        if(this.cursors.left.isDown) {
+        if (this.cursors.left.isDown) {
             this.turnLeft();
-        } else if(this.cursors.right.isDown) {
+        } else if (this.cursors.right.isDown) {
             this.turnRight();
         }
 
         this.player.x = this.player.car.x;
         this.player.y = this.player.car.y;
 
-        this.player.text.x = this.player.x-100;
-        this.player.text.y = this.player.y-100;
+        this.player.text.x = this.player.x - 100;
+        this.player.text.y = this.player.y - 100;
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
 
-        document.dispatchEvent(new CustomEvent('updatePlayer', {detail: {
-            x: this.player.x, 
-            y: this.player.y, 
-            speed: this.player.speed,
-            rotation: this.player.rotation
-        }}));
+        document.dispatchEvent(new CustomEvent('updatePlayer', {
+            detail: {
+                x: this.player.x,
+                y: this.player.y,
+                speed: this.player.speed,
+                rotation: this.player.rotation
+            }
+        }));
     }
 
     accelerate(velocityVector: Phaser.Math.Vector2) {
-        if(velocityVector.length() < this.maxSpeed) {
+        if (velocityVector.length() < this.maxSpeed) {
             this.player.speed += this.acceleration;
-        } 
+        }
 
-        if(this.player.speed < 0.1 && this.player.isReversing) {
+        if (this.player.speed < 0.1 && this.player.isReversing) {
             this.player.isReversing = false;
         }
     }
-    
+
     deaccelerate(velocityVector: Phaser.Math.Vector2) {
-        if(velocityVector.length() > 0.1) {
+        if (velocityVector.length() > 0.1) {
             this.player.speed -= this.deacceleration * (this.player.isReversing ? -1 : 1);
         }
     }
@@ -158,7 +156,7 @@ export default class GameScene extends Phaser.Scene
     }
 
     applyForce() {
-        let carRotation = this.player.car.rotation+ (Math.PI/2);
+        let carRotation = this.player.car.rotation + (Math.PI / 2);
         let directionVector = new Phaser.Math.Vector2(Math.cos(carRotation), Math.sin(carRotation));
         this.player.car.applyForce(directionVector.normalize().scale(-this.player.speed));
 
