@@ -72,4 +72,4 @@ document.addEventListener('updatePlayer', (customEvent => {
 // Dispatch event with player id after connecting to socket (TODO - connection status monitoring)
 setTimeout(() => {
     document.dispatchEvent(new CustomEvent('playerId', { detail: socket.io.engine.id }));
-}, 500)
+}, 1000)

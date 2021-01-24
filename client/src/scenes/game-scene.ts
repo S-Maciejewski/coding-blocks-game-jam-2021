@@ -4,8 +4,8 @@ import Player from "../models/player";
 export default class GameScene extends Phaser.Scene {
     gameState: GameState;
     player: Player;
-    playerId: number;
-    otherPlayers: Player[] = [];
+    playerId: string;
+    players: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
     acceleration: number = 0.02;
@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
 
     constructor() {
         super('GameScene');
+        this.updateOtherPlayers = this.updateOtherPlayers.bind(this);
     }
 
     init(data) {
@@ -40,7 +41,11 @@ export default class GameScene extends Phaser.Scene {
 
         this.load.image('rock', 'assets/rock.png');
 
-        this.load.image('tire', 'assets/tire.png');
+        document.addEventListener('updateGameStateResponse', (data: CustomEvent) => {
+            this.gameState = data.detail;
+        });
+
+        // this.load.image('tire', 'assets/tire.png');
     }
 
     create() {
@@ -56,34 +61,24 @@ export default class GameScene extends Phaser.Scene {
         this.rock.setOnCollide(x => this.player.speed = 0);
         this.rock.setStatic(true);
 
-        for (var i = 1; i < this.gameState.players.length; i++) {
+        for (var i = 0; i < this.gameState.players.length; i++) {
             let gameStatePlayer = this.gameState.players[i];
             let newPlayer = new Player();
             newPlayer._id = gameStatePlayer._id
-            newPlayer.x = 200 * (i + 1);
-            newPlayer.y = 200;
+            newPlayer.x = gameStatePlayer.x;
+            newPlayer.y = gameStatePlayer.y;
             newPlayer.car = this.matter.add.image(newPlayer.x, newPlayer.y, `car_${i}`);
-            newPlayer.car.setAngle(90);
+            newPlayer.car.setAngle(gameStatePlayer.rotation);
             newPlayer.car.setFrictionAir(0.5);
             newPlayer.car.setMass(1000);
             newPlayer.car.setFriction(0.2);
             newPlayer.car.setBounce(1);
-            newPlayer.speed = 0;
-            newPlayer.text = this.add.text(200 * (i + 1), 200, newPlayer._id);
+            newPlayer.speed = gameStatePlayer.speed;
+            newPlayer.text = this.add.text(gameStatePlayer.x, gameStatePlayer.y, newPlayer._id);
+            this.players.push(newPlayer);
         }
 
-        this.player = new Player();
-        this.player._id = 'test-id';
-        this.player.x = 200;
-        this.player.y = 200;
-        this.player.car = this.matter.add.image(this.player.x, this.player.y, 'car_0');
-        this.player.car.setAngle(90);
-        this.player.car.setFrictionAir(0.5);
-        this.player.car.setMass(1000);
-        this.player.car.setFriction(0.2);
-        this.player.car.setBounce(1);
-        this.player.speed = 0;
-        this.player.text = this.add.text(200, 200, this.player._id);
+        this.player = this.players.find(p => p._id === this.playerId);
 
         this.matter.world.setBounds(0, 0, 1920, 1080);
 
@@ -120,6 +115,8 @@ export default class GameScene extends Phaser.Scene {
         this.player.text.y = this.player.y - 100;
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
 
+        this.updateOtherPlayers();
+
         document.dispatchEvent(new CustomEvent('updatePlayer', {
             detail: {
                 x: this.player.x,
@@ -128,6 +125,23 @@ export default class GameScene extends Phaser.Scene {
                 rotation: this.player.rotation
             }
         }));
+    }
+
+    updateOtherPlayers() {
+        for (var i = 0; i < this.gameState.players.length; i++) {
+            if (this.gameState.players[i]._id !== this.playerId) {
+                let otherPlayer = this.gameState.players[i];
+
+                let index = this.players.findIndex((x: Player) => x._id === otherPlayer._id);
+                this.players[index].x = otherPlayer.x;
+                this.players[index].y = otherPlayer.y;
+                // this.players[index].rotation = otherPlayer.rotation;
+                this.players[index].car.setRotation(otherPlayer.rotation);
+                this.players[index].speed = otherPlayer.speed;
+                this.players[index].text.destroy();
+                this.players[index].text = this.add.text(otherPlayer.x, otherPlayer.y, otherPlayer._id);
+            }
+        }
     }
 
     accelerate(velocityVector: Phaser.Math.Vector2) {

@@ -103,7 +103,8 @@ export default class MenuScene extends Phaser.Scene {
             setTimeout(() => {
                 this.startGameButton.text = 'Game starting in 1!';
                 setTimeout(() => {
-                    this.scene.start('GameScene', { gameState: this.gameState, player: this.playerId });
+                    // TODO: Remove event listener for update
+                    this.scene.start('GameScene', { gameState: this.gameState, playerId: this.playerId });
                 }, 1000);
             }, 1000);
         }, 1000);
@@ -121,6 +122,7 @@ export default class MenuScene extends Phaser.Scene {
                 this.gameJoinStatusText.text = 'No game found';
             } else {
                 console.log(`Joining room for code ${code}`);
+                this.gameJoinStatusText.text = '';
                 this.gameJoinStatusText.destroy();
 
                 this.proceedToRoomView();
