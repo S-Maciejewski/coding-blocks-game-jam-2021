@@ -1,4 +1,4 @@
-name: Data scraping and deployment
+name: Github pages deployment
 
 on:
   push:
@@ -7,7 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./client
     steps:
       - uses: actions/checkout@v2
 
@@ -15,8 +17,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12.x"
-
-      - run: cd ./client
 
       - name: Cache dependencies
         uses: actions/cache@v1
@@ -34,5 +34,5 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: dist
+          FOLDER: ./client/dist
           CLEAN: true
