@@ -2,7 +2,7 @@ name: Data scraping and deployment
 
 on:
   push:
-    branches: [test]
+    branches: [main]
 
 jobs:
   build:
