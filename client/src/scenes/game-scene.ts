@@ -8,13 +8,13 @@ export default class GameScene extends Phaser.Scene {
     players: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
-    acceleration: number = 0.02;
-    breakingPower: number = 0.05;
-    reverseAcceleration: number = 0.01;
-    deacceleration: number = 0.01;
+    acceleration: number = 0.015;
+    breakingPower: number = 0.008;
+    reverseAcceleration: number = 0.001;
+    deacceleration: number = 0.002;
 
-    turningAcceleration: number = 0.01;
-    maxSpeed: number = 5;
+    turningAcceleration: number = 0.002;
+    maxSpeed: number = 6;
 
     carWidth: number = 75;
     carHeight: number = 128;
@@ -90,7 +90,8 @@ export default class GameScene extends Phaser.Scene {
 
     }
 
-    update() {
+    update(time, delta) {
+
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
         if (this.cursors.up.isDown) {
             this.accelerate(velocityVector);
@@ -100,12 +101,12 @@ export default class GameScene extends Phaser.Scene {
             this.deaccelerate(velocityVector);
         }
 
-        this.applyForce();
+        this.applyForce(delta);
 
         if (this.cursors.left.isDown) {
-            this.turnLeft();
+            this.turnLeft(delta);
         } else if (this.cursors.right.isDown) {
-            this.turnRight();
+            this.turnRight(delta);
         }
 
         this.player.x = this.player.car.x;
@@ -154,6 +155,8 @@ export default class GameScene extends Phaser.Scene {
     deaccelerate(velocityVector: Phaser.Math.Vector2) {
         if (velocityVector.length() > 0.1) {
             this.player.speed -= this.deacceleration * (this.player.isReversing ? -1 : 1);
+        } else {
+            this.player.speed = 0;
         }
     }
 
@@ -166,20 +169,20 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    applyForce() {
+    applyForce(delta: number) {
         let carRotation = this.player.car.rotation + (Math.PI / 2);
         let directionVector = new Phaser.Math.Vector2(Math.cos(carRotation), Math.sin(carRotation));
-        this.player.car.applyForce(directionVector.normalize().scale(-this.player.speed));
+        this.player.car.applyForce(directionVector.normalize().scale(-this.player.speed * delta));
 
     }
 
-    turnLeft() {
+    turnLeft(delta: number) {
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        this.player.car.setAngularVelocity(-this.turningAcceleration * velocityVector.length() * (this.player.isReversing ? -1 : 1));
+        this.player.car.setAngularVelocity(-this.turningAcceleration * velocityVector.length() * delta * (this.player.isReversing ? -1 : 1));
     }
 
-    turnRight() {
+    turnRight(delta: number) {
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        this.player.car.setAngularVelocity(this.turningAcceleration * velocityVector.length() * (this.player.isReversing ? -1 : 1));
+        this.player.car.setAngularVelocity(this.turningAcceleration * velocityVector.length() * delta * (this.player.isReversing ? -1 : 1));
     }
 }

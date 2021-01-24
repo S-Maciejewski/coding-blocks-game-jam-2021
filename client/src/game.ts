@@ -4,7 +4,7 @@ import MenuScene from './scenes/menu-scene';
 
 const config = {
     type: Phaser.AUTO,
-    backgroundColor: '#125555',
+    backgroundColor: '#70c9cc',
     width: 800,
     height: 600,
     scene: [MenuScene, GameScene],
