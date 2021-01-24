@@ -19,8 +19,6 @@ jobs:
           working-directory: ./client
           node-version: "12.x"
 
-      - run: cd ./client
-
       - name: Cache dependencies
         uses: actions/cache@v1
         with:
