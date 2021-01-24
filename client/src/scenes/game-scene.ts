@@ -7,14 +7,15 @@ export default class GameScene extends Phaser.Scene {
     playerId: string;
     players: Player[] = [];
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    frameTime: number;
 
-    acceleration: number = 0.0065;
-    breakingPower: number = 0.008;
-    reverseAcceleration: number = 0.001;
-    deacceleration: number = 0.002;
+    acceleration: number = 0.25;
+    breakingPower: number = 0.3;
+    reverseAcceleration: number = 0.1;
+    deacceleration: number = 0.1;
 
-    turningAcceleration: number = 0.002;
-    maxSpeed: number = 3;
+    turningAcceleration: number = 0.045;
+    maxSpeed: number = 1.5;
 
     carWidth: number = 72;
     carHeight: number = 122;
@@ -59,15 +60,16 @@ export default class GameScene extends Phaser.Scene {
         // level
         for(var i = 0; i < 4; i++) {
             this.rock = this.matter.add.image(500 + (300*i), 400, 'rock');
-            this.rock.setOnCollide(x => this.player.speed = 0);
+            this.rock.setOnCollide(x => console.log(x));
             this.rock.setStatic(true);
         }
 
         for(var i = 0; i < 4; i++) {
             this.rock = this.matter.add.image(300 + (410*i), 750, 'rock');
-            this.rock.setOnCollide(x => this.player.speed = 0);
+            this.rock.setOnCollide(x => console.log(x));
             this.rock.setStatic(true);
         }
+
 
         for (var i = 0; i < this.gameState.players.length; i++) {
             let gameStatePlayer = this.gameState.players[i];
@@ -99,23 +101,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time, delta) {
-
-        let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        if (this.cursors.up.isDown) {
-            this.accelerate(velocityVector);
-        } else if (this.cursors.down.isDown) {
-            this.brake(velocityVector);
-        } else {
-            this.deaccelerate(velocityVector);
-        }
-
-        this.applyForce(delta);
-
-        if (this.cursors.left.isDown) {
-            this.turnLeft(delta);
-        } else if (this.cursors.right.isDown) {
-            this.turnRight(delta);
-        }
+        this.frameTime += delta;
 
         this.player.x = this.player.car.x;
         this.player.y = this.player.car.y;
@@ -126,6 +112,28 @@ export default class GameScene extends Phaser.Scene {
         this.player.text.text = `${this.player._id}\n${this.player.x.toFixed(0)}, ${this.player.y.toFixed(0)}`;
 
         this.updateOtherPlayers();
+
+        if(this.frameTime <= 16.5) {
+            return;
+        }
+        this.frameTime = 0;
+
+        let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
+        if (this.cursors.up.isDown) {
+            this.accelerate(velocityVector);
+        } else if (this.cursors.down.isDown) {
+            this.brake(velocityVector);
+        } else {
+            this.deaccelerate(velocityVector);
+        }
+
+        this.applyForce();
+
+        if (this.cursors.left.isDown) {
+            this.turnLeft();
+        } else if (this.cursors.right.isDown) {
+            this.turnRight();
+        }
 
         document.dispatchEvent(new CustomEvent('updatePlayer', {
             detail: {
@@ -177,20 +185,20 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    applyForce(delta: number) {
+    applyForce() {
         let carRotation = this.player.car.rotation + (Math.PI / 2);
         let directionVector = new Phaser.Math.Vector2(Math.cos(carRotation), Math.sin(carRotation));
-        this.player.car.applyForce(directionVector.normalize().scale(-this.player.speed * delta));
+        this.player.car.applyForce(directionVector.normalize().scale(-this.player.speed));
 
     }
 
-    turnLeft(delta: number) {
+    turnLeft() {
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        this.player.car.setAngularVelocity(-this.turningAcceleration * velocityVector.length() * delta * (this.player.isReversing ? -1 : 1));
+        this.player.car.setAngularVelocity(-this.turningAcceleration * velocityVector.length() * (this.player.isReversing ? -1 : 1));
     }
 
-    turnRight(delta: number) {
+    turnRight() {
         let velocityVector = new Phaser.Math.Vector2((this.player.car.body as any).velocity.x, (this.player.car.body as any).velocity.y);
-        this.player.car.setAngularVelocity(this.turningAcceleration * velocityVector.length() * delta * (this.player.isReversing ? -1 : 1));
+        this.player.car.setAngularVelocity(this.turningAcceleration * velocityVector.length() * (this.player.isReversing ? -1 : 1));
     }
 }
