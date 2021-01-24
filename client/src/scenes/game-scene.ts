@@ -110,6 +110,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.player.x = this.player.car.x;
         this.player.y = this.player.car.y;
+        this.player.rotation = this.player.car.rotation;
 
         this.player.text.x = this.player.x - 100;
         this.player.text.y = this.player.y - 100;
@@ -135,7 +136,7 @@ export default class GameScene extends Phaser.Scene {
                 let index = this.players.findIndex((x: Player) => x._id === otherPlayer._id);
                 this.players[index].text.setPosition(otherPlayer.x, otherPlayer.y);
                 this.players[index].car.setPosition(otherPlayer.x, otherPlayer.y);
-                this.players[index].car.setAngle(otherPlayer.rotation);
+                this.players[index].car.setRotation(otherPlayer.rotation);
             }
         }
     }
