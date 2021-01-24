@@ -26,6 +26,7 @@ export default class MenuScene extends Phaser.Scene {
         this.handleStartGameButton = this.handleStartGameButton.bind(this);
         this.handleCreateRoomButton = this.handleCreateRoomButton.bind(this);
         this.handleNewGameStateResponse = this.handleNewGameStateResponse.bind(this);
+        this.updateGameStateResponse = this.updateGameStateResponse.bind(this);
     }
 
     preload() {
@@ -34,9 +35,7 @@ export default class MenuScene extends Phaser.Scene {
             console.log(`Player id: ${this.playerId}`);
         })
 
-        document.addEventListener('updateGameStateResponse', (data: CustomEvent) => {
-            this.handleNewGameStateResponse(data.detail);
-        });
+        document.addEventListener('updateGameStateResponse', this.updateGameStateResponse);
 
         document.addEventListener('noGameFound', () => {
             this.noGameFound = true;
@@ -47,6 +46,10 @@ export default class MenuScene extends Phaser.Scene {
             this.handleNewGameStateResponse(data.detail);
             this.startGame();
         });
+    }
+
+    updateGameStateResponse(data: CustomEvent) {
+        this.handleNewGameStateResponse(data.detail);
     }
 
     create() {
@@ -104,8 +107,9 @@ export default class MenuScene extends Phaser.Scene {
                 this.startGameButton.text = 'Game starting in 1!';
                 setTimeout(() => {
                     // TODO: Remove event listener for update
+                    document.removeEventListener('updateGameStateResponse', this.updateGameStateResponse);
                     this.scene.start('GameScene', { gameState: this.gameState, playerId: this.playerId });
-                    this.scene.sleep('MenuScene');
+
                 }, 1000);
             }, 1000);
         }, 1000);
