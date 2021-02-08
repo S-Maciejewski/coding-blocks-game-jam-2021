@@ -1,4 +1,4 @@
-const ADDR = 'http://138.197.178.99'
+const ADDR = 'https://324ee4d2eb3a.ngrok.io'
 // const ADDR = 'http://localhost:3000'
 let socket
 
